@@ -1,0 +1,556 @@
+
+SDET PATH
+Playwright Web + Mobile (Appium/WDio + Swift básico)
+1 hora por día · 1 tarea por día · resultado visible al final
+
+
+
+🌐 PLAYWRIGHT WEB
+4 semanas · Demoblaze
+📱 MOBILE (Appium)
+6 semanas · iOS + Android
+🍎 SWIFT BÁSICO
+1 semana · XCUITest intro
+
+
+LA REGLA DEL PATH: Una tarea por día. Si la terminás antes de la hora, pará. Si no la terminás, dejala para mañana y seguí. No saltés tareas.
+
+
+
+
+PARTE 1 — PLAYWRIGHT WEB (4 semanas)
+App de práctica: Demoblaze — e-commerce real con login, carrito, categorías, checkout y API pública.
+
+SEMANA 1 — Fundamentos sólidos
+
+
+LUN
+Setup del proyecto
+npm init playwright@latest
+Configurá playwright.config.ts: baseURL → Demoblaze, trace en primer retry, screenshot on fail
+Creá carpetas: pages/, fixtures/, tests/e2e/, tests/api/
+Commiteá a GitHub
+✓ Repositorio en GitHub con estructura base y config funcionando
+
+
+MAR
+Primer POM: LoginPage
+Creá pages/LoginPage.ts: abrir modal, usuario, contraseña, submit
+Creá tests/e2e/login.spec.ts con 2 tests
+Test 1: login exitoso → home con nombre del usuario visible
+Test 2: credenciales inválidas → alert con mensaje de error
+✓ 2 tests en verde
+
+
+MIÉ
+Segundo POM: ProductPage
+Creá pages/ProductPage.ts: nombre, precio, agregar al carrito
+Escribí un test que navegue a un producto, verifique nombre y precio, y agregue al carrito
+Manejá el alert de confirmación
+✓ Test de producto en verde, alert manejado
+
+
+JUE
+Tercer POM: CartPage
+Creá pages/CartPage.ts: obtener items, eliminar item, obtener total
+Test 1: producto agregado aparece con precio correcto
+Test 2: al eliminar item el carrito queda vacío
+✓ Flujo agregar → verificar → eliminar funcionando
+
+
+VIE
+Test E2E del flujo completo
+Usá los 3 POMs: login → producto → carrito → checkout → confirmación
+Sin credenciales hardcodeadas — todo desde variables de entorno (.env)
+✓ Flujo completo de compra en verde, credenciales en .env
+
+
+
+SEMANA 2 — Autenticación y datos
+
+
+LUN
+Global Setup
+Creá global-setup.ts: loguea una sola vez, guarda estado en auth/user.json
+Registralo en el config
+Verificá con --headed que arranca directo al home
+✓ Login ocurre una sola vez para toda la suite
+
+
+MAR
+Fixture de autenticación
+Creá fixtures/auth.fixture.ts con authenticatedPage
+Migrá los tests existentes para usar este fixture
+Ningún test debe tener page.goto("/login") ni credenciales
+✓ Tests migrados, cero logins manuales
+
+
+MIÉ
+Helper de variables de entorno
+Creá helpers/env.ts: lee .env, exporta variables tipadas, lanza error si falta alguna
+Reemplazá todos los process.env.X por imports de este helper
+✓ Si borrás una variable del .env, la suite falla con mensaje claro
+
+
+JUE
+Data-driven: categorías
+Creá tests/data/categories.ts con datos de Phones, Laptops, Monitors
+Usá test.each — un solo test que corre 3 veces, una por categoría
+✓ 3 ejecuciones del mismo test, una por categoría
+
+
+VIE
+Refactor y revisión
+Regla 1: ningún POM tiene expect() adentro
+Regla 2: ningún test tiene strings hardcodeados que deberían ser datos
+Regla 3: ningún método de POM hace más de una cosa
+✓ Suite limpia, GitHub actualizado
+
+
+
+SEMANA 3 — API Testing
+
+
+LUN
+Primera llamada a la API
+Endpoint: https://api.demoblaze.com
+Usá el objeto request de Playwright (sin abrir navegador)
+Verificá: status 200, body tiene campo Items, Items es array no vacío
+✓ Primer test de API en verde, sin navegador
+
+
+MAR
+Schemas con Zod
+Instalá Zod
+Modelá la estructura de un producto en helpers/schemas.ts
+Validá: id, título, precio (número), categoría (string), descripción
+Actualizá el test del lunes para parsear con el schema
+✓ Validación de contrato funcionando
+
+
+MIÉ
+Test híbrido API + UI
+Consultá la API para obtener nombre y precio de un producto real
+Abrí el navegador y verificá que ese producto se muestra correctamente en la UI
+Si la API falla → test.skip con mensaje explicativo
+✓ Test híbrido API + UI funcionando
+
+
+JUE
+Interceptar red
+Test 1: servidor caído (abort)
+Test 2: respuesta lenta de 4 segundos
+Test 3: lista de productos vacía
+Verificá que la UI no crashea y muestra estado comprensible
+✓ 3 tests de red funcionando
+
+
+VIE
+Preparar estado via API
+Autenticá via API, agregá producto al carrito via API
+Abrí el carrito en el navegador y verificá que el producto está
+✓ Setup via API, verificación via UI — la base de suites rápidas
+
+
+
+SEMANA 4 — CI/CD y reporte
+
+
+LUN
+GitHub Actions básico
+Creá .github/workflows/playwright.yml
+Dispará en cada push, instalar deps + browsers, correr tests
+Subí reporte HTML como artifact aunque fallen los tests
+Credenciales en GitHub Secrets
+✓ Primer pipeline verde en GitHub
+
+
+MAR
+Tags y jobs separados
+Taggeá cada test con @smoke o @regression
+Job smoke: solo @smoke en cada push, menos de 2 minutos
+Job regression: todo, solo en PRs
+✓ Dos jobs independientes en el pipeline
+
+
+MIÉ
+Multi-browser
+Agregá Firefox y WebKit al config
+Corré suite de smoke en los 3 browsers en paralelo
+Si un test falla solo en un browser, el reporte debe dejarlo claro
+✓ Suite corriendo en Chrome, Firefox y Safari
+
+
+JUE
+Detectar tests lentos
+Identificá los 2 tests más lentos en el reporte HTML
+Reemplazá waitForTimeout por waitForSelector o waitForResponse
+Medí la diferencia de tiempo
+✓ Suite más rápida, sin esperas arbitrarias
+
+
+VIE
+README del portfolio
+Qué testea la suite, cómo correrla localmente
+Patrones usados: POM, fixtures, global setup, contract testing
+Captura del pipeline verde
+✓ Proyecto listo para mostrar en una entrevista
+
+
+
+✅ Al terminar Parte 1: suite E2E + API + CI/CD en 3 browsers + README profesional en GitHub
+
+
+
+
+PARTE 2 — SWIFT BÁSICO (1 semana)
+Solo lo necesario para entender el ecosistema iOS. No profundizás en Swift — esto es contexto para cuando veas código de apps nativas.
+
+SEMANA ÚNICA — Swift para testers (no para devs)
+
+
+LUN
+Variables, tipos y funciones
+Abrí Swift Playgrounds en tu Mac
+Practicá: let/var, String, Int, Bool, Array, Dictionary
+Funciones con parámetros y return
+Usá Cursor para que te explique cada concepto
+✓ Playground con 10 funciones simples funcionando
+
+
+MAR
+Clases y structs
+Creá struct Product con nombre, precio, categoría
+Creá clase Cart con array de productos + métodos agregar, eliminar, total
+Es lo mismo que un POM en XCUITest
+✓ Cart con 3 métodos funcionando
+
+
+MIÉ
+Opcionales y manejo de errores
+Practicá Optional, guard let, if let, do/catch
+Escribí función que parsee un JSON de producto y devuelva nil si falta algún campo
+✓ Función de parseo con manejo de opcionales
+
+
+JUE
+Closures y async/await
+Practicá closures básicos y async/await de Swift moderno
+Escribí función que simule llamada a API con async/await
+✓ Función async funcionando en playground
+
+
+VIE
+Xcode y primer proyecto
+Instalá Xcode. Creá proyecto iOS vacío
+Explorá: targets, schemes, simuladores
+Corré el simulador de iPhone — no escribís tests todavía
+✓ Simulador corriendo, Xcode sin miedo
+
+
+
+✅ Al terminar Parte 2: entendés el ecosistema iOS, podés leer código Swift y usar Xcode. Listo para Appium.
+
+
+
+
+PARTE 3 — MOBILE (Appium + WDio + IA) — 6 semanas
+App de práctica: Sauce Labs Demo App (iOS + Android, open source, gratuita). Tu stack de JS/TS se transfiere directamente acá.
+
+SEMANA 1 — Setup + Primer test real
+
+
+LUN
+Instalá Appium 2 + drivers
+npm install -g appium
+appium driver install xcuitest
+appium driver install uiautomator2
+appium doctor → sin errores críticos
+✓ appium doctor sin errores críticos
+
+
+MAR
+Appium Inspector
+Descargalo y conectalo al simulador iOS
+Explorá elementos de cualquier app
+Entendé los selectores: accessibility id, xpath, class chain
+✓ Sabés encontrar cualquier elemento en el Inspector
+
+
+MIÉ
+Proyecto WDio
+npm init wdio@latest
+Configuralo para iOS simulator
+App de práctica: Sauce Labs Demo App
+✓ Proyecto creado y configurado
+
+
+JUE-VIE
+Primer test corriendo
+Login en la demo app
+Verificá que un elemento existe
+No importa si es feo, que corra: npx wdio verde
+✓ npx wdio verde en la terminal
+
+
+
+SEMANA 2 — Selectores + POM
+
+
+LUN-MAR
+Selectores mobile
+~accessibility-id → equivalente a getByRole
+-ios predicate string → más potente
+-ios class chain → para estructuras complejas
+Sin XPath, solo selectores semánticos
+✓ Test sin XPath funcionando
+
+
+MIÉ-JUE
+POM en TypeScript
+Igual que en Playwright, te va a resultar natural
+Creá LoginPage.ts y ProductPage.ts
+Suite de 5 tests usando los POMs
+✓ Suite de 5 tests usando POM
+
+
+VIE
+iOS vs Android
+Mismo test, dos configs de capabilities
+Solo cambia platformName y deviceName — el test no cambia
+✓ Mismo test corriendo en ambas plataformas
+
+
+
+SEMANA 3 — React Native con Detox
+
+
+Detox es más rápido que Appium para RN porque corre dentro de la app. El framework más pedido en startups.
+
+LUN-MAR
+Setup Detox
+Instalalo en un proyecto RN open source
+npx detox init, configurá iOS simulator y Android emulator
+✓ Primer test con Detox corriendo
+
+
+MIÉ-JUE
+Flujos críticos
+Login, navegación, formularios
+Manejá permisos: cámara, notificaciones
+✓ Suite de 5 tests reales con Detox
+
+
+VIE
+Appium vs Detox
+Escribí el mismo test en los dos frameworks
+Documentá cuándo usar cada uno en el README
+✓ Comparativa documentada — diferencial en entrevistas
+
+
+
+SEMANA 4 — CI/CD Mobile
+
+
+LUN-MAR
+GitHub Actions para Android
+Emulador Android es más fácil en CI que iOS simulator
+Job de smoke en cada push
+✓ Pipeline verde en GitHub
+
+
+MIÉ
+Tags smoke/regression
+Igual que en Playwright: @smoke y @regression
+Smoke en cada push, regression en PRs
+✓ Dos workflows con distintos triggers
+
+
+JUE-VIE
+Reporte visual
+Allure Report o WDIO HTML reporter
+Sube como artifact en cada ejecución
+✓ Reporte visible en GitHub Actions con historial
+
+
+
+SEMANA 5 — IA + Mobile (tu diferencial)
+
+
+Acá conectás todo lo que ya sabés de Playwright MCP + agentes con el contexto mobile. Casi nadie en LATAM tiene este stack.
+
+LUN-MAR
+Playwright MCP sobre apps web mobile
+Viewport mobile en Playwright
+Agente que testea flujos responsive
+✓ Suite mobile web con agentes funcionando
+
+
+MIÉ-JUE
+Healer Agent para Appium
+Selector cambia → el agente busca alternativa automáticamente
+Auto-recuperación de al menos 2 tipos de fallos distintos
+✓ Healer agent que auto-recupera fallos en Appium
+
+
+VIE
+LLM Observability con Langfuse
+Conectá Langfuse a tus agentes de testing
+Que quede loggeado cada decisión del agente
+Dashboard con trazas de ejecución visibles
+✓ Dashboard con trazas de ejecución en Langfuse
+
+
+
+SEMANA 6 — Portfolio
+
+
+LUN-JUE
+Proyecto integrador
+Elegí una app open source real (RN preferentemente)
+XCUITest básico + Appium/WDio + CI/CD + agente simple
+Mínimo 15 tests con sentido real, sin tests de relleno
+✓ Suite completa commiteada y pipeline verde
+
+
+VIE
+README del portfolio
+Stack, cómo correrlo, screenshot del pipeline verde
+Sección explicando nativo vs híbrido vs web
+Eso te diferencia en cualquier entrevista SDET mobile
+✓ Repo que entra en cualquier entrevista SDET mobile
+
+
+
+✅ Al terminar Parte 3: dos repos en GitHub, CI/CD mobile, agentes de testing con observabilidad. Stack senior.
+
+
+
+
+FUENTES Y RECURSOS
+
+Playwright Web
+
+📺 VIDEO
+Playwright con TypeScript — Academind / Test Automation University
+youtube.com / testautomationu.com
+
+
+📖 DOCS
+Documentación oficial de Playwright
+playwright.dev
+
+
+📖 DOCS
+API de Playwright — page.route(), fixtures, global setup
+playwright.dev/docs/api/class-page
+
+
+🛠️ PRÁCTICA
+Demoblaze — app de práctica del path
+demoblaze.com
+
+
+
+Appium + WebdriverIO
+
+📺 VIDEO
+Mobile Automation with Appium 2.0 and WebdriverIO 2026 — Udemy (mejor curso actualizado)
+udemy.com/course/appium-webdriverio-mobile-automation
+
+
+📺 GRATIS
+Playlist: Mobile Automation using WebDriverIO | Appium — YouTube
+youtube.com/playlist?list=PLLz4P06JoExsvvwL2hmq7zInEpKDD1jKb
+
+
+📖 DOCS
+WebdriverIO — documentación oficial
+webdriver.io
+
+
+📖 DOCS
+Appium — documentación oficial
+appium.io
+
+
+🛠️ PRÁCTICA
+Sauce Labs Demo App (open source)
+github.com/saucelabs/my-demo-app-rn
+
+
+
+Detox (React Native)
+
+📖 DOCS
+Detox Getting Started — tener tests corriendo en menos de 10 minutos
+wix.github.io/Detox/docs/introduction/getting-started
+
+
+📖 GUÍA
+BrowserStack — tutorial completo de Detox con iOS y Android
+browserstack.com/guide/detox-testing-tutorial
+
+
+📖 ARTÍCULO
+Testim.io — Detox for React Native paso a paso
+testim.io/blog/detox-react-native
+
+
+💻 GITHUB
+Repositorio oficial de Detox (Wix)
+github.com/wix/Detox
+
+
+
+Langfuse — LLM Observability
+
+📺 VIDEO
+Langfuse — The Open Source LLM Observability Platform Explained (reciente)
+youtube.com/watch?v=kIf1Ng76cmc
+
+
+📖 DOCS
+Langfuse Observability Docs — trazas, sesiones, observaciones
+langfuse.com/docs/observability/overview
+
+
+📖 DOCS
+Langfuse Get Started — tiene plugin para Cursor
+langfuse.com/docs/observability/get-started
+
+
+📖 ARTÍCULO
+Towards Data Science — LLM Monitoring and Observability con Langfuse
+towardsdatascience.com
+
+
+
+
+
+RESUMEN DEL PATH
+
+PARTE
+DURACIÓN
+RESULTADO
+🌐 Playwright Web
+4 semanas
+Suite E2E + API + CI/CD en 3 browsers + README
+🍎 Swift Básico
+1 semana
+Contexto iOS, Xcode sin miedo
+📱 Mobile Appium+WDio
+4 semanas
+Tests iOS + Android, POM, CI/CD
+🤖 IA + Mobile
+1 semana
+Agentes de testing + Langfuse observability
+📁 Portfolio
+1 semana
+Proyecto integrador + README profesional
+
+
+TOTAL: ~11 semanas · 1 hora por día · 2 repos en GitHub · CI/CD completo · IA integrada
+
+
+Sobre Cursor Pro: usalo desde el día 1 como copiloto, no como reemplazo. Que te explique el código que no entendés, que te genere el boilerplate de los POMs. Pero escribí vos la lógica del test — ahí está el valor que vas a vender en una entrevista.
