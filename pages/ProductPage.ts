@@ -11,9 +11,10 @@ export class ProductPage {
   readonly productPrice: Locator;
   readonly addToCartButton: Locator;
 
+  /** Subcadena que aparece en el título del primer producto de cada categoría en demoblaze.com (no coincide con el nombre del menú). */
   readonly expectedKeywordByCategory: Record<DemoblazeCategory, string> = {
-    Phones: 'phone',
-    Laptops: 'laptop',
+    Phones: 'galaxy',
+    Laptops: 'vaio',
     Monitors: 'monitor',
   };
 

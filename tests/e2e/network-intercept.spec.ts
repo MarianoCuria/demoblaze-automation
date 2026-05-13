@@ -15,7 +15,8 @@ test.describe('network intercept', () => {
       await route.continue();
     });
     await page.goto('/');
-    await expect(page.locator('#tbodyid .card').first()).toBeVisible();
+    // La ruta retrasa la API 4s; en WebKit el pintado puede quedar justo después del timeout por defecto.
+    await expect(page.locator('#tbodyid .card').first()).toBeVisible({ timeout: 15_000 });
   });
 
   test('lista vacía — grilla sin productos', async ({ page }) => {
